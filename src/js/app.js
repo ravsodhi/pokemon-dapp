@@ -1,64 +1,76 @@
 App = {
   web3Provider: null,
   contracts: {},
+  account: '0x0',
 
   init: function() {
-    // Load pets.
-    $.getJSON('../pets.json', function(data) {
-      var petsRow = $('#petsRow');
-      var petTemplate = $('#petTemplate');
-
-      for (i = 0; i < data.length; i ++) {
-        petTemplate.find('.panel-title').text(data[i].name);
-        petTemplate.find('img').attr('src', data[i].picture);
-        petTemplate.find('.pet-breed').text(data[i].breed);
-        petTemplate.find('.pet-age').text(data[i].age);
-        petTemplate.find('.pet-location').text(data[i].location);
-        petTemplate.find('.btn-adopt').attr('data-id', data[i].id);
-
-        petsRow.append(petTemplate.html());
-      }
-    });
-
     return App.initWeb3();
   },
 
   initWeb3: function() {
-    /*
-     * Replace me...
-     */
-
+    if (typeof web3 !== 'undefined') {
+      // If a web3 instance is already provided by Meta Mask.
+      App.web3Provider = web3.currentProvider;
+      web3 = new Web3(web3.currentProvider);
+    } else {
+      // Specify default instance if no web3 instance provided
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+      web3 = new Web3(App.web3Provider);
+    }
     return App.initContract();
   },
 
   initContract: function() {
-    /*
-     * Replace me...
-     */
-
-    return App.bindEvents();
+    $.getJSON("Pokemon.json", function(pokemon){
+      // Instantiate a new truffle contract from the artifact
+      App.contracts.Pokemon = TruffleContract(pokemon);
+      // Connect provider to interact with contract
+      App.contracts.Pokemon.setProvider(App.web3Provider);
+      return App.render();
+    });
   },
 
-  bindEvents: function() {
-    $(document).on('click', '.btn-adopt', App.handleAdopt);
-  },
+  render: function() {
+    var pokemonInstance;
+    var loader = $("#loader");
+    var content = $("#content");
 
-  markAdopted: function(adopters, account) {
-    /*
-     * Replace me...
-     */
-  },
+    loader.show();
+    content.hide();
 
-  handleAdopt: function(event) {
-    event.preventDefault();
+    // Load account data
+    web3.eth.getCoinbase(function(err, account){
+      if (err == null) {
+        App.account = account;
+        $("#accountAddress").html("Your Account: " + account);
+      }
+    });
 
-    var petId = parseInt($(event.target).data('id'));
+    // Load contract data
+    App.contracts.Pokemon.deployed().then(function(instance){
+      pokemonInstance = instance;
+      return pokemonInstance.pokemonCount();
+    }).then(function(pokemonCount) {
+      var pokemonResults = $("#pokemonResults");
+      pokemonResults.empty();
 
-    /*
-     * Replace me...
-     */
+      for(var i = 0; i <= pokemonCount; i++){
+        pokemonInstance.pokemons(i).then(function(pokemon) {
+          var id = pokemon[0];
+          var level = pokemon[1];
+          var exp = pokemon[2];
+
+          // Render Pokemon result
+          var pokemonTemplate = "<tr><th>" + id + "</th><td>" + level +"</td><td>" + exp + "</td></tr>"; pokemonResults.append(pokemonTemplate);
+        });
+      }
+
+      loader.hide();
+      content.show();
+    }).catch(function(error) {
+      console.warn(error);
+    });
   }
-
 };
 
 $(function() {

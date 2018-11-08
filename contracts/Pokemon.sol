@@ -3,10 +3,11 @@ pragma solidity ^0.4.24;
 contract Pokemon
 {
     string public testString;
-
+    uint public pokemonCount = 0;
     constructor()
     {
-        testString = "test";
+        _createPokemon(1, 1, 1);
+        _createPokemon(2, 1, 2);
     }
 
     struct Pokemon
@@ -16,7 +17,7 @@ contract Pokemon
         uint64 exp;    // Experience acquired by a pokemon
     }
 
-    Pokemon[] pokemons; // A list of ALL the pokemons in existence
+    Pokemon[] public pokemons; // A list of ALL the pokemons in existence
     mapping(uint256 => address) public monIndexToOwner; // The mapping defining the owner of specific pokemon
     mapping(address => uint256) pokemonOwned; // The number of pokemons owned by an address
 
@@ -40,6 +41,7 @@ contract Pokemon
     internal
     returns(uint256)
     {
+        pokemonCount++;
         Pokemon memory _pokemon = Pokemon({
             monId : _monId,
             level : _level,
