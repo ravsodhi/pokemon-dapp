@@ -4,7 +4,10 @@ contract Pokemon
 {
     string public testString;
     uint public pokemonCount = 0;
-    constructor()
+
+    constructor
+    ()
+    public
     {
         _createPokemon(1, 1, 1);
         _createPokemon(2, 1, 2);
@@ -33,7 +36,7 @@ contract Pokemon
         monIndexToOwner[_monId] = _to;
 
         pokemonOwned[_from]--;
-        emit Transferred(_from, _to, _monId);
+        emit Transferred (_from, _to, _monId);
     }
 
     /* Function to create pokemon */
