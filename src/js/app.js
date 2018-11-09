@@ -35,6 +35,7 @@ App = {
     var loader = $("#loader");
     var content = $("#content");
 
+
     loader.show();
     content.hide();
 
@@ -51,8 +52,10 @@ App = {
       pokemonInstance = instance;
       return pokemonInstance.pokemonCount();
     }).then(function(pokemonCount) {
-      var pokemonResults = $("#pokemonResults");
-      pokemonResults.empty();
+      // var pokemonResults = $("#pokemonResults");
+      // pokemonResults.empty();
+      var pokemonRow = $('#pokemonRow');
+      var pokemonTemplate = $('#pokemonTemplate');
 
       for(var i = 0; i <= pokemonCount; i++){
         pokemonInstance.pokemons(i).then(function(pokemon) {
@@ -61,12 +64,24 @@ App = {
           var exp = pokemon[2];
 
           // Render Pokemon result
-          var pokemonTemplate = "<tr><th>" + id + "</th><td>" + level +"</td><td>" + exp + "</td></tr>"; pokemonResults.append(pokemonTemplate);
+          // var pokemonTemplate = "<tr><th>" + id + "</th><td>" + level +"</td><td>" + exp + "</td></tr>";
+          // pokemonResults.append(pokemonTemplate);
+
+          pokemonTemplate.find('.panel-title').text("pokemon");
+          // pokemonTemplate.find('img').attr('src', data[i].picture);
+          pokemonTemplate.find('.pet-breed').text(level);
+          pokemonTemplate.find('.pet-age').text(level);
+          pokemonTemplate.find('.pet-location').text(level);
+          pokemonTemplate.find('.btn-adopt').attr('data-id', id);
+
+          pokemonRow.append(pokemonTemplate.html());
         });
       }
 
       loader.hide();
       content.show();
+      // pokemonTemplate.show();
+      // pokemonRow.show();
     }).catch(function(error) {
       console.warn(error);
     });
