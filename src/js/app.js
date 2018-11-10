@@ -35,10 +35,8 @@ App = {
     var loader = $("#loader");
     var content = $("#content");
 
-
     loader.show();
     content.hide();
-
     // Load account data
     web3.eth.getCoinbase(function(err, account){
       if (err == null) {
@@ -59,21 +57,17 @@ App = {
 
       for(var i = 0; i <= pokemonCount; i++){
         pokemonInstance.pokemons(i).then(function(pokemon) {
-          var id = pokemon[0];
-          var level = pokemon[1];
-          var exp = pokemon[2];
+          var monId = pokemon[0];
+          var monName = pokemon[1];
+          var monType = pokemon[2];
+          var monLevel = pokemon[3];
 
-          // Render Pokemon result
-          // var pokemonTemplate = "<tr><th>" + id + "</th><td>" + level +"</td><td>" + exp + "</td></tr>";
-          // pokemonResults.append(pokemonTemplate);
-
-          pokemonTemplate.find('.panel-title').text("pokemon");
-          // pokemonTemplate.find('img').attr('src', data[i].picture);
-          pokemonTemplate.find('.pet-breed').text(level);
-          pokemonTemplate.find('.pet-age').text(level);
-          pokemonTemplate.find('.pet-location').text(level);
-          pokemonTemplate.find('.btn-adopt').attr('data-id', id);
-
+          pokemonTemplate.find('.panel-title').text(monName);
+          pokemonTemplate.find('img').attr('src', "images/"+monId+".jpg");
+          pokemonTemplate.find('.pokemon-name').text(monName);
+          pokemonTemplate.find('.pokemon-type').text(monType);
+          pokemonTemplate.find('.pokemon-level').text(monLevel);
+          pokemonTemplate.find('.btn-catch').attr('data-id', monId);
           pokemonRow.append(pokemonTemplate.html());
         });
       }

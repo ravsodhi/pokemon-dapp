@@ -2,20 +2,21 @@ pragma solidity ^0.4.24;
 
 contract Pokemon
 {
-    string public testString;
     uint public pokemonCount = 0;
 
     constructor
     ()
     public
     {
-        _createPokemon(1, 1, 1);
-        _createPokemon(2, 1, 2);
+        _createPokemon("Pikachu", "Lightning", 2);
+        _createPokemon("Charizard", "Fire", 4);
     }
 
     struct Pokemon
     {
         uint256 monId; // Id for each unique pokemon
+        string name;   // Name of the pokemon
+        string monType;   // monType of the pokemon -- "Fire, Earth, Water, Air, Lightning"
         uint64 level;  // Level for each pokemon
         uint64 exp;    // Experience acquired by a pokemon
     }
@@ -26,7 +27,7 @@ contract Pokemon
 
     // Events -- front end will update if it is listening to an event
     event Transferred(address _from, address _to, uint256 _monId);
-    event PokemonCreated(uint256 _monId, uint64 _level, uint64 _exp);
+    event PokemonCreated(uint256 _monId, string _name, uint64 _level, string _monType);
 
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _monId)
@@ -40,20 +41,21 @@ contract Pokemon
     }
 
     /* Function to create pokemon */
-    function _createPokemon(uint256 _monId, uint64 _level, uint64 _exp)
+    function _createPokemon(string _name, string _monType, uint64 _level)
     internal
     returns(uint256)
     {
         pokemonCount++;
         Pokemon memory _pokemon = Pokemon({
-            monId : _monId,
+            monId : pokemonCount,
+            name : _name,
+            monType : _monType,
             level : _level,
-            exp : _exp
+            exp : 0
         });
 
         pokemons.push(_pokemon);
-        emit PokemonCreated(_monId, _level, _exp);
-        return _monId;
+        emit PokemonCreated(pokemonCount, _name ,_level, _monType);
+        return pokemonCount;
     }
-
 }
