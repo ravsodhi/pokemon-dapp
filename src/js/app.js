@@ -79,7 +79,20 @@ App = {
     }).catch(function(error) {
       console.warn(error);
     });
-  }
+  },
+    catchPok : function(data_id){
+        var pokemonInstance;
+        App.contracts.Pokemon.deployed().then(function(instance){
+        pokemonInstance = instance;
+        console.log(data_id);
+        return pokemonInstance.catchPokemon(data_id);
+        }).then(function(anything){
+            console.log("lolololol");
+            console.log(anything);
+        }).catch(function(error){
+            console.warn(error);
+        }); 
+    }
 };
 
 $(function() {

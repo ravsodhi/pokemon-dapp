@@ -3,6 +3,7 @@ A decentralized pokemon game involving catching Pokemon, trading/raising of Poke
 
 ## Instructions
 ```
+npm install
 truffle migrate --reset
 npm run dev
 ```
