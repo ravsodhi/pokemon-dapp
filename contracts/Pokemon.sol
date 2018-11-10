@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 contract Pokemon
 {
     uint public pokemonCount = 0;
+    uint public wildPokemonCount = 0;
 
     constructor
     ()
@@ -23,11 +24,13 @@ contract Pokemon
     }
 
     Pokemon[] public pokemons; // A list of ALL the pokemons in existence
+    uint256[] public wildPokemons;
     mapping(uint256 => address) public pokIndexToOwner; // The mapping defining the owner of specific pokemon
-    mapping(address => uint256) pokemonOwned; // The number of pokemons owned by an address
     mapping(address => uint)    pendingReturns; // Storing the pending returns of some user
-    mapping(address => uint256[])   ownedPoks;  // All the pokemons owned by an address
+    mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address
+    mapping(address => uint256) public ownedPoksCount; // The number of pokemons owned by an address
 
+    //Getter functions
     // Events -- front end will update if it is listening to an event
     event Transferred(address _from, address _to, uint256 _pokId);
     event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value);
@@ -37,21 +40,35 @@ contract Pokemon
     internal
     {
         uint i = 0;
-        pokemonOwned[_to]++;
         pokIndexToOwner[_pokId] = _to;
         ownedPoks[_to].push(_pokId);
+        ownedPoksCount[_to]++;
 
         /* When some user already owns the pokemon */
-        if(_from != address(0)){
-            pokemonOwned[_from]--;
+        if(_from != address(0))
+        {
             /* Deleting the pokemon from previous owner's array */
-            for(i = 0;i < ownedPoks[_from].length; i++){
+            for(i = 0;i < ownedPoks[_from].length; i++)
+            {
                 if(ownedPoks[_from][i] == _pokId)
                     break;
             }
             ownedPoks[_from][i] = ownedPoks[_from][ownedPoks[_from].length - 1];
             delete ownedPoks[_from][ownedPoks[_from].length - 1];
             ownedPoks[_from].length--;
+            ownedPoksCount[_from]--;
+        }
+        else
+        {
+            for(uint j = 0; j < wildPokemons.length; j++)
+            {
+                if(wildPokemons[j] == _pokId)
+                    break;
+            }
+            wildPokemons[j] = wildPokemons[wildPokemons.length - 1];
+            delete wildPokemons[wildPokemons.length - 1];
+            wildPokemons.length--;
+            wildPokemonCount--;
         }
         emit Transferred (_from, _to, _pokId);
     }
@@ -69,6 +86,8 @@ contract Pokemon
             exp : 0,
             value : _value
         });
+        wildPokemons.push(pokemonCount);
+        wildPokemonCount++;
         pokemonCount++;
         pokemons.push(_pokemon);
         emit PokemonCreated(pokemonCount, _name ,_level, _pokType, _value);
@@ -82,14 +101,13 @@ contract Pokemon
        */
     function catchPokemon(uint256 pokID)
     public
-    //payable
+    // payable
     returns(bool)
     {
         require(pokIndexToOwner[pokID] == address(0), "This pokemon is already caught by someone");
-        //require(pokemons[pokID].value <= msg.value, "Not supplied the required amount");
+        // require(pokemons[pokID].value <= msg.value, "Not supplied the required amount");
         _transfer(0, msg.sender, pokID);
-        //pendingReturns[msg.sender] = msg.value - pokemons[pokID].value;
+        // pendingReturns[msg.sender] = msg.value - pokemons[pokID].value;
         return true;
     }
-
 }
