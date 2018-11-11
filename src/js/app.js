@@ -101,6 +101,14 @@ App = {
           });
   },
   fetchOwnPokemons: function (pokId) {
+    /* To check if the pokemon is already there */
+    var ownPokemonRow = $('#ownPokemonRow');
+    ownPokemonRow.children("div").each(function(){
+        var id = $(this).find('.btn-catch').attr('data-id');
+        if(id == pokId)
+            return;
+    })
+    /********************************************/
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       console.log(App.account);
