@@ -11,6 +11,9 @@ contract Pokemon
     {
         _createPokemon("Pikachu", "Lightning", 2, 100);
         _createPokemon("Charizard", "Fire", 4, 200);
+        _createPokemon("Snorlax", "Earth", 3, 50);
+        _createPokemon("Magikarp", "Water",1, 25);
+        _createPokemon("Onyx", "Earth", 4, 150);
     }
 
     struct Pokemon
@@ -88,9 +91,9 @@ contract Pokemon
         });
         wildPokemons.push(pokemonCount);
         wildPokemonCount++;
-        pokemonCount++;
         pokemons.push(_pokemon);
         emit PokemonCreated(pokemonCount, _name ,_level, _pokType, _value);
+        pokemonCount++;
         return pokemonCount;
     }
 

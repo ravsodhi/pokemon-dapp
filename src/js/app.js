@@ -26,6 +26,7 @@ App = {
       App.contracts.Pokemon = TruffleContract(pokemon);
       // Connect provider to interact with contract
       App.contracts.Pokemon.setProvider(App.web3Provider);
+
       App.listenForEvents();
       // App.fetchWildPokemons();
       // App.fetchOwnPokemons();
@@ -54,7 +55,7 @@ App = {
     // pokemonRow.show();
 
   },
-  fetchWildPokemons: function () {
+  fetchWildPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       return pokemonInstance.wildPokemonCount();
@@ -64,10 +65,11 @@ App = {
       console.log(pokemonCount.c[0]);
       var wildPokemonRow = $('#wildPokemonRow');
       var pokemonTemplate = $('#pokemonTemplate');
-      wildPokemonRow.html(pokemonTemplate);
+      $('#wildPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.wildPokemons(i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
+
 
             var monId = pokemon[0];
             var monName = pokemon[1];
@@ -80,7 +82,9 @@ App = {
             pokemonTemplate.find('.pokemon-type').text(monType);
             pokemonTemplate.find('.pokemon-level').text(monLevel);
             pokemonTemplate.find('.btn-catch').attr('data-id', monId);
-            wildPokemonRow.append(pokemonTemplate.html());
+            if (monId == pokId) {
+              wildPokemonRow.append(pokemonTemplate.html());
+            }
           });
         });
       }
@@ -88,7 +92,7 @@ App = {
       console.warn(error);
     });
   },
-  fetchOwnPokemons: function () {
+  fetchOwnPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       console.log(App.account);
@@ -96,11 +100,10 @@ App = {
     }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
       var pokemonTemplate = $('#pokemonTemplate');
-      ownPokemonRow.empty();
+      $('#ownPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.ownedPoks(App.account, i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
-
             var monId = pokemon[0];
             var monName = pokemon[1];
             var monType = pokemon[2];
@@ -112,7 +115,9 @@ App = {
             pokemonTemplate.find('.pokemon-type').text(monType);
             pokemonTemplate.find('.pokemon-level').text(monLevel);
             pokemonTemplate.find('.btn-catch').attr('data-id', monId);
-            ownPokemonRow.append(pokemonTemplate.html());
+            if (monId == pokId) {
+              ownPokemonRow.append(pokemonTemplate.html());
+            }
           });
         });
       }
@@ -140,17 +145,18 @@ App = {
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon Transferred", event)
-        App.fetchWildPokemons();
-        App.fetchOwnPokemons();
-        // App.render();
+        App.fetchWildPokemons(event.args["_pokId"].c[0]);
+        App.fetchOwnPokemons(event.args["_pokId"].c[0]);
+        App.render();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon Created", event)
-        App.fetchWildPokemons();
-        // App.render();
+        console.log(event.args["_pokId"].c[0]);
+        App.fetchWildPokemons(event.args["_pokId"].c[0]);
+        App.render();
       });
     });
   }
