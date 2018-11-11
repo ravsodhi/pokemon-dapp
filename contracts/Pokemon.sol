@@ -104,13 +104,13 @@ contract Pokemon
        */
     function catchPokemon(uint256 pokID)
     public
-    // payable
+    payable
     returns(bool)
     {
         require(pokIndexToOwner[pokID] == address(0), "This pokemon is already caught by someone");
-        // require(pokemons[pokID].value <= msg.value, "Not supplied the required amount");
+        require(pokemons[pokID].value <= msg.value, "Not supplied the required amount");
         _transfer(0, msg.sender, pokID);
-        // pendingReturns[msg.sender] = msg.value - pokemons[pokID].value;
+        pendingReturns[msg.sender] = msg.value - pokemons[pokID].value;
         return true;
     }
 }

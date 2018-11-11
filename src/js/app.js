@@ -130,7 +130,7 @@ App = {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       console.log(data_id);
-      return pokemonInstance.catchPokemon(data_id);
+      return pokemonInstance.catchPokemon(data_id, {from: App.account, value: 200});
     }).then(function (anything) {
       console.log("lolololol");
       console.log(anything);
