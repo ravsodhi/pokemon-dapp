@@ -64,7 +64,7 @@ App = {
       // pokemonResults.empty();
       console.log(pokemonCount.c[0]);
       var wildPokemonRow = $('#wildPokemonRow');
-      var pokemonTemplate = $('#pokemonTemplate');
+      var wildPokemonTemplate = $('#wildPokemonTemplate');
       $('#wildPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.wildPokemons(i).then(function (index) {
@@ -76,14 +76,14 @@ App = {
             var monType = pokemon[2];
             var monLevel = pokemon[3];
 
-            pokemonTemplate.find('.panel-title').text(monName);
-            pokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
-            pokemonTemplate.find('.pokemon-name').text(monName);
-            pokemonTemplate.find('.pokemon-type').text(monType);
-            pokemonTemplate.find('.pokemon-level').text(monLevel);
-            pokemonTemplate.find('.btn-catch').attr('data-id', monId);
+            wildPokemonTemplate.find('.panel-title').text(monName);
+            wildPokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
+            wildPokemonTemplate.find('.pokemon-name').text(monName);
+            wildPokemonTemplate.find('.pokemon-type').text(monType);
+            wildPokemonTemplate.find('.pokemon-level').text(monLevel);
+            wildPokemonTemplate.find('.btn-catch').attr('data-id', monId);
             if (monId == pokId) {
-              wildPokemonRow.append(pokemonTemplate.html());
+              wildPokemonRow.append(wildPokemonTemplate.html());
             }
           });
         });
@@ -99,7 +99,7 @@ App = {
       return pokemonInstance.ownedPoksCount(App.account);
     }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
-      var pokemonTemplate = $('#pokemonTemplate');
+      var ownPokemonTemplate = $('#ownPokemonTemplate');
       $('#ownPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.ownedPoks(App.account, i).then(function (index) {
@@ -109,14 +109,14 @@ App = {
             var monType = pokemon[2];
             var monLevel = pokemon[3];
 
-            pokemonTemplate.find('.panel-title').text(monName);
-            pokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
-            pokemonTemplate.find('.pokemon-name').text(monName);
-            pokemonTemplate.find('.pokemon-type').text(monType);
-            pokemonTemplate.find('.pokemon-level').text(monLevel);
-            pokemonTemplate.find('.btn-catch').attr('data-id', monId);
+            ownPokemonTemplate.find('.panel-title').text(monName);
+            ownPokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
+            ownPokemonTemplate.find('.pokemon-name').text(monName);
+            ownPokemonTemplate.find('.pokemon-type').text(monType);
+            ownPokemonTemplate.find('.pokemon-level').text(monLevel);
+            ownPokemonTemplate.find('.btn-catch').attr('data-id', monId);
             if (monId == pokId) {
-              ownPokemonRow.append(pokemonTemplate.html());
+              ownPokemonRow.append(ownPokemonTemplate.html());
             }
           });
         });

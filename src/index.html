@@ -37,7 +37,7 @@
 
   </div>
 
-  <div id="pokemonTemplate" style="display: none;">
+  <div id="wildPokemonTemplate" style="display: none;">
     <div class="col-sm-6 col-md-3 col-lg-3">
       <div class="panel panel-default panel-pokemon">
         <div class="panel-heading">
@@ -51,6 +51,25 @@
           <strong>Type</strong>: <span class="pokemon-type">3</span><br />
           <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br /><br />
           <button onclick="App.catchPok(this.getAttribute('data-id'));" class="btn btn-default btn-catch" type="button" data-id="0">Catch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="ownPokemonTemplate" style="display: none;">
+    <div class="col-sm-6 col-md-3 col-lg-3">
+      <div class="panel panel-default panel-pokemon">
+        <div class="panel-heading">
+          <h3 class="panel-title">Pokemon</h3>
+        </div>
+        <div class="panel-body">
+          <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 160px;height: 150px"
+            src="https://images-na.ssl-images-amazon.com/images/I/510JE1W%2BdlL._UX385_.jpg" data-holder-rendered="true">
+          <br /><br />
+          <strong>Name</strong>: <span class="pokemon-name">Golden Retriever</span><br />
+          <strong>Type</strong>: <span class="pokemon-type">3</span><br />
+          <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br /><br />
+          <button onclick="App.catchPok(this.getAttribute('data-id'));" class="btn btn-default btn-trade" type="button"
+            data-id="0">Trade</button>
         </div>
       </div>
     </div>
