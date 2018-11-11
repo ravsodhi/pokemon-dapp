@@ -65,7 +65,6 @@ App = {
       console.log(pokemonCount.c[0]);
       var wildPokemonRow = $('#wildPokemonRow');
       var wildPokemonTemplate = $('#wildPokemonTemplate');
-      $('#wildPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.wildPokemons(i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
@@ -92,6 +91,15 @@ App = {
       console.warn(error);
     });
   },
+  removeCaughtPokemons: function(pokId){
+          var wildPokemonRow = $('#wildPokemonRow');
+          wildPokemonRow.children("div").each(function(){
+              var id = $(this).find('.btn-catch').attr('data-id');
+              if(id == pokId){
+                  this.remove();
+              }
+          });
+  },
   fetchOwnPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
@@ -100,7 +108,7 @@ App = {
     }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
       var ownPokemonTemplate = $('#ownPokemonTemplate');
-      $('#ownPokemonRow').empty();
+      //$('#ownPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.ownedPoks(App.account, i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
@@ -145,9 +153,9 @@ App = {
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon Transferred", event)
-        App.fetchWildPokemons(event.args["_pokId"].c[0]);
+        App.removeCaughtPokemons(event.args["_pokId"]);
         App.fetchOwnPokemons(event.args["_pokId"].c[0]);
-        App.render();
+        //location.reload();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
@@ -156,7 +164,7 @@ App = {
         console.log("Pokemon Created", event)
         console.log(event.args["_pokId"].c[0]);
         App.fetchWildPokemons(event.args["_pokId"].c[0]);
-        App.render();
+        //App.render();
       });
     });
   }
