@@ -47,6 +47,7 @@ App = {
         $("#accountAddress").html("Your Account: " + account);
       }
     });
+    App.displayPendingReturns();
     // Load contract data
     loader.hide();
     content.show();
@@ -241,6 +242,27 @@ App = {
         });
    },
 
+   displayPendingReturns: function() {
+    App.contracts.Pokemon.deployed().then(function (instance){
+        pokemonInstance = instance;
+        return pokemonInstance.pendingReturns(App.account);
+    }).then(function (my_money){
+        console.log("I am here");
+        var wallet = $('#walletBallance').html("Wallet Ballance: " + my_money.c[0]);
+    }).catch(function (error){
+        console.warn(error);
+    });
+   },
+
+   getPendingReturns: function() {
+       App.contracts.Pokemon.deployed().then(function (instance){
+           pokemonInstance = instance;
+           pokemonInstance.withdraw({from: App.account}).then(function (){
+                App.displayPendingReturns();
+           });
+       });
+   },
+
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
       instance.Transferred({}, {
@@ -251,6 +273,7 @@ App = {
         App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnOwnCountNotCorrect();
         App.ReloadOnTradeMarketCountNotCorrect();
+        App.displayPendingReturns();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
@@ -259,7 +282,6 @@ App = {
         console.log("Pokemon Created", event)
         console.log(event.args["_pokId"].c[0]);
         App.fetchWildPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
-        //App.render();
       });
       instance.TradingTurnedOn({}, {
         fromBlock: 0,

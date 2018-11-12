@@ -4,3 +4,5 @@ https://github.com/ethereum/web3.js/issues/1032 -- beta version v/s the one we a
 
 When the pokemon is bought, and again put up for trade on the market {Duplicates will arise, need to check this}
 --> Filter with transactionHash
+
+pendingReturns += instead of =
