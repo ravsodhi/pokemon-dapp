@@ -62,7 +62,6 @@ App = {
     }).then(function (pokemonCount) {
       // var pokemonResults = $("#pokemonResults");
       // pokemonResults.empty();
-      console.log(pokemonCount.c[0]);
       var wildPokemonRow = $('#wildPokemonRow');
       var wildPokemonTemplate = $('#wildPokemonTemplate');
       for (var i = 0; i < pokemonCount.c[0]; i++) {
@@ -76,12 +75,12 @@ App = {
             var monLevel = pokemon[3];
 
             wildPokemonTemplate.find('.panel-title').text(monName);
-            wildPokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
+            wildPokemonTemplate.find('img').attr('src', "images/" + monId.c[0] + ".jpg");
             wildPokemonTemplate.find('.pokemon-name').text(monName);
             wildPokemonTemplate.find('.pokemon-type').text(monType);
             wildPokemonTemplate.find('.pokemon-level').text(monLevel);
-            wildPokemonTemplate.find('.btn-catch').attr('data-id', monId);
-            if (monId == pokId) {
+            wildPokemonTemplate.find('.btn-catch').attr('data-id', monId.c[0]);
+            if (monId.c[0] == pokId) {
               wildPokemonRow.append(wildPokemonTemplate.html());
             }
           });
@@ -101,14 +100,6 @@ App = {
           });
   },
   fetchOwnPokemons: function (pokId) {
-    /* To check if the pokemon is already there */
-    var ownPokemonRow = $('#ownPokemonRow');
-    ownPokemonRow.children("div").each(function(){
-        var id = $(this).find('.btn-catch').attr('data-id');
-        if(id == pokId)
-            return;
-    })
-    /********************************************/
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       console.log(App.account);
@@ -116,7 +107,6 @@ App = {
     }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
       var ownPokemonTemplate = $('#ownPokemonTemplate');
-      //$('#ownPokemonRow').empty();
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.ownedPoks(App.account, i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
@@ -125,13 +115,14 @@ App = {
             var monType = pokemon[2];
             var monLevel = pokemon[3];
 
+              console.log("maa k c", monId.c[0]);
             ownPokemonTemplate.find('.panel-title').text(monName);
-            ownPokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
+            ownPokemonTemplate.find('img').attr('src', "images/" + monId.c[0] + ".jpg");
             ownPokemonTemplate.find('.pokemon-name').text(monName);
             ownPokemonTemplate.find('.pokemon-type').text(monType);
             ownPokemonTemplate.find('.pokemon-level').text(monLevel);
-            ownPokemonTemplate.find('.btn-catch').attr('data-id', monId);
-            if (monId == pokId) {
+            ownPokemonTemplate.find('.btn-trade').attr('data-id', monId.c[0]);
+            if (monId.c[0] == pokId) {
               ownPokemonRow.append(ownPokemonTemplate.html());
             }
           });
@@ -141,11 +132,46 @@ App = {
       console.warn(error);
     });
   },
+  fetchTradePokemons: function(pokId){
+    App.contracts.Pokemon.deployed().then(function(instance){
+        pokemonInstance = instance;
+        return pokemonInstance.ownedPoksCount(App.account);
+    }).then(function (pokemonCount){
+        var tradePokemonRow = $('#tradePokemonRow');
+        var tradePokemonTemplate = $('#tradePokemonTemplate');
+        for(var i = 0;i < pokemonCount.c[0]; i++){
+            pokemonInstance.ownedPoks(App.account, i).then(function(index){
+                pokemonInstance.pokemons(index).then(function(pokemon){
+                    console.log(index);
+                    var monId = pokemon[0];
+                    var monName = pokemon[1];
+                    var monType = pokemon[2];
+                    var monLevel = pokemon[3];
+                    tradePokemonTemplate.find('.panel-title').text(monName);
+                    tradePokemonTemplate.find('img').attr('src', "images/" + monId + ".jpg");
+                    tradePokemonTemplate.find('.pokemon-name').text(monName);
+                    tradePokemonTemplate.find('.pokemon-type').text(monType);
+                    tradePokemonTemplate.find('.pokemon-level').text(monLevel);
+                    tradePokemonTemplate.find('.btn-buy').attr('data-id', monId);
+                    console.log("chakka", pokemonCount.c[0]);
+                    console.log("In trading function", monId.c[0], pokId);
+                    if(monId.c[0] == pokId){
+                        tradePokemonRow.append(tradePokemonTemplate.html());
+                        console.log("Chal jaa bhai", monId.c[0], pokId);
+                    }
+                });
+            });
+        }
+    }).catch(function(error){
+        console.warn(error);
+    });
+  },
+
   catchPok: function (data_id) {
     var pokemonInstance;
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
-      console.log(data_id);
+      console.log("Data:id ", data_id, App.account);
       return pokemonInstance.catchPokemon(data_id, {from: App.account, value: 200});
     }).then(function (anything) {
       console.log("lolololol");
@@ -154,6 +180,23 @@ App = {
       console.warn(error);
     });
   },
+
+  tradePok:function(data_id){
+      var pokemonInstance;
+      App.contracts.Pokemon.deployed().then(function(instance){
+          pokemonInstance = instance;
+          var price = prompt("Enter the Price for trade of this pokemon: ", "100");
+          if(price == null || price == ""){
+              ;
+          }
+          else{
+              console.log("This is my price for the pokemon", price);
+              console.log(data_id, App.account);
+              pokemonInstance.allowTrading(price, data_id, {from: App.account});
+          }
+      });
+  },
+
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
       instance.Transferred({}, {
@@ -174,6 +217,13 @@ App = {
         App.fetchWildPokemons(event.args["_pokId"].c[0]);
         //App.render();
       });
+        instance.TradingTurnedOn({}, {
+            fromBlock: 0,
+            toBlock: 'latest'
+        }).watch(function(error, event){
+            console.log("Pokemon's trading turned on", event);
+            App.fetchTradePokemons(event.args["_pokId"].c[0]);
+        });
     });
   }
 };

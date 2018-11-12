@@ -28,6 +28,7 @@ contract Pokemon
 
     Pokemon[] public pokemons; // A list of ALL the pokemons in existence
     uint256[] public wildPokemons;
+    mapping(uint256 => uint) tradePokemons; // 1 if a pokemon is tradeble, otherwise 0
     mapping(uint256 => address) public pokIndexToOwner; // The mapping defining the owner of specific pokemon
     mapping(address => uint)    pendingReturns; // Storing the pending returns of some user
     mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address
@@ -37,6 +38,7 @@ contract Pokemon
     // Events -- front end will update if it is listening to an event
     event Transferred(address _from, address _to, uint256 _pokId);
     event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value);
+    event TradingTurnedOn(uint256 _pokId, address _owner);
 
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _pokId)
@@ -74,6 +76,17 @@ contract Pokemon
             wildPokemonCount--;
         }
         emit Transferred (_from, _to, _pokId);
+    }
+
+    /* Function to allow trading of a pokemon */
+    function allowTrading(uint64 _value, uint256 _pokId)
+    public
+    returns(bool){
+        require(msg.sender == pokIndexToOwner[_pokId], "You are not the owner of this pokemon");
+        tradePokemons[_pokId] = 1; 
+        pokemons[_pokId].value = _value;
+        emit TradingTurnedOn(_pokId, msg.sender);
+        return true;
     }
 
     /* Function to create pokemon */
