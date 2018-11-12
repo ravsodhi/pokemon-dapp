@@ -55,7 +55,7 @@ App = {
     // pokemonRow.show();
 
   },
-  renderPokemons: function (pokId, pokemon, PokemonRow, PokemonTemplate, btn_category) {
+  renderPokemons: function (pokId, pokemon, PokemonRow, PokemonTemplate, btn_category, btn_disabled) {
     var monId = pokemon[0];
     var monName = pokemon[1];
     var monType = pokemon[2];
@@ -71,46 +71,41 @@ App = {
     PokemonTemplate.find('.pokemon-level').text(monLevel);
     PokemonTemplate.find('.pokemon-value').text(monValue);
     PokemonTemplate.find('.btn-'.concat(btn_category)).attr('data-id', monId.c[0]);
+    if(btn_disabled == true)
+      PokemonTemplate.find('.btn-'.concat(btn_category)).prop('disabled', true);
+    else
+      PokemonTemplate.find('.btn-'.concat(btn_category)).prop('disabled', false);
     if (monId.c[0] == pokId) {
       PokemonRow.append(PokemonTemplate.html());
     }
   },
   fetchWildPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
-      pokemonInstance = instance;
-      return pokemonInstance.wildPokemonCount();
-    }).then(function (pokemonCount) {
       var wildPokemonRow = $('#wildPokemonRow');
       var wildPokemonTemplate = $('#wildPokemonTemplate');
-      for (var i = 0; i < pokemonCount.c[0]; i++) {
-        pokemonInstance.wildPokemons(i).then(function (index) {
-          pokemonInstance.pokemons(index).then(function (pokemon) {
-            App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch');
-          });
-        });
-      }
+      pokemonInstance = instance;
+      pokemonInstance.pokIndexToOwner(pokId).then(function(address){
+          if(address == 0){
+              pokemonInstance.pokemons(pokId).then(function (pokemon) {
+                App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch', false);
+              });
+          }
+      });
     }).catch(function (error) {
       console.warn(error);
     });
   },
   fetchOwnPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
-      pokemonInstance = instance;
-      console.log(App.account);
-      return pokemonInstance.ownedPoksCount(App.account);
-    }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
       var ownPokemonTemplate = $('#ownPokemonTemplate');
-      for (var i = 0; i < pokemonCount.c[0]; i++) {
-        pokemonInstance.ownedPoks(App.account, i).then(function (index) {
-          pokemonInstance.pokemons(index).then(function (pokemon) {
-            pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
-                if(is_in_trade.c[0] == 0)
-                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade');
-            });
-          });
+      pokemonInstance = instance;
+      pokemonInstance.pokemons(pokId).then(function (pokemon) {
+        pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
+            if(is_in_trade.c[0] == 0)
+                App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false);
         });
-      }
+      });
     }).catch(function (error) {
       console.warn(error);
     });
@@ -118,17 +113,18 @@ App = {
   fetchTradePokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
-      return pokemonInstance.ownedPoksCount(App.account);
-    }).then(function (pokemonCount) {
       var tradePokemonRow = $('#tradePokemonRow');
       var tradePokemonTemplate = $('#tradePokemonTemplate');
-      for (var i = 0; i < pokemonCount.c[0]; i++) {
-        pokemonInstance.ownedPoks(App.account, i).then(function (index) {
-          pokemonInstance.pokemons(index).then(function (pokemon) {
-            App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy');
-          });
+      pokemonInstance.pokemons(pokId).then(function (pokemon){
+        var button_disabled = false;
+        pokemonInstance.pokIndexToOwner(pokId).then(function(owner){
+            if(owner == App.account){
+                button_disabled = true;
+            }
+            console.log(owner, App.account, button_disabled);
+            App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled);
         });
-      }
+      });
     }).catch(function (error) {
       console.warn(error);
     });
@@ -156,15 +152,17 @@ App = {
     var pokemonInstance;
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
-      var price = prompt("Enter the Price for trade of this pokemon: ", "100");
-      if (price == null || price == "") {
-        ;
-      }
-      else {
-        console.log("This is my price for the pokemon", price);
-        console.log(data_id, App.account);
-        pokemonInstance.allowTrading(price, data_id, { from: App.account });
-      }
+      pokemonInstance.pokemons(data_id).then(function (pokemon){
+          var price = prompt("Enter the Price for trade of this pokemon: ", pokemon[5]);
+          if (price == null || price == "") {
+            ;
+          }
+          else {
+            console.log("This is my price for the pokemon", price);
+            console.log(data_id, App.account);
+            pokemonInstance.allowTrading(price, data_id, { from: App.account });
+          }
+      });
     });
   },
 
