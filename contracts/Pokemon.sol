@@ -35,21 +35,26 @@ contract Pokemon
     mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address(includes the ones which are trade market also)
     mapping(address => uint256) public ownedPoksCount; // The number of pokemons owned by an address(includes the tradable ones also)
     mapping(address => uint256) public tradePoksCount; // Number of pokemons put up for trade by and address
+   
+    mapping(uint256 => uint256) public pokemonTransactionHash; // Store the transaction with which the pokemon is related to
 
     //Getter functions
     // Events -- front end will update if it is listening to an event
-    event Transferred(address _from, address _to, uint256 _pokId);
-    event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value);
-    event TradingTurnedOn(uint256 _pokId, address _owner);
+    event Transferred(address _from, address _to, uint256 _pokId, uint256 txnHash);
+    event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value, uint256 txnHash);
+    event TradingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
 
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _pokId)
     internal
     {
+        require(_from == pokIndexToOwner[_pokId], "You are not the owner of the pokemon");
+        require(_to != pokIndexToOwner[_pokId], "You can not transfer the pokemon to yourselves");
         uint i = 0;
         pokIndexToOwner[_pokId] = _to;
         ownedPoks[_to].push(_pokId);
         ownedPoksCount[_to]++;
+        tradePokemons[_pokId] = 0;      // Trading is turned off when the pokemon is bought by someone else
 
         /* When some user already owns the pokemon */
         if(_from != address(0))
@@ -64,6 +69,8 @@ contract Pokemon
             delete ownedPoks[_from][ownedPoks[_from].length - 1];
             ownedPoks[_from].length--;
             ownedPoksCount[_from]--;
+            tradePoksCount[_from]--;        // This traded pokemon is now sold
+            tradePokemonCount--;            // Total number of tradable pokemon in the market reduces by one
         }
         else
         {
@@ -77,7 +84,19 @@ contract Pokemon
             wildPokemons.length--;
             wildPokemonCount--;
         }
-        emit Transferred (_from, _to, _pokId);
+        pokemonTransactionHash[_pokId]++;
+        emit Transferred (_from, _to, _pokId, pokemonTransactionHash[_pokId]);
+    }
+
+    /* Function to buy a pokemon from the trade market */
+    function buyFromTradeMarket(uint256 _pokId)
+    public
+    payable
+    {
+        require(msg.value >= pokemons[_pokId].value, "Did not supply the proper amount");
+        _transfer(pokIndexToOwner[_pokId], msg.sender, _pokId); // Transfer the ownership of pokemon to the buyer
+        pendingReturns[msg.sender] += msg.value - pokemons[_pokId].value;
+        pendingReturns[pokIndexToOwner[_pokId]] += pokemons[_pokId].value;
     }
 
     /* Function to allow trading of a pokemon */
@@ -89,7 +108,8 @@ contract Pokemon
         tradePokemonCount++;
         tradePoksCount[msg.sender]++;
         pokemons[_pokId].value = _value;
-        emit TradingTurnedOn(_pokId, msg.sender);
+        pokemonTransactionHash[_pokId]++;
+        emit TradingTurnedOn(_pokId, msg.sender, pokemonTransactionHash[_pokId]);
         return true;
     }
 
@@ -109,7 +129,8 @@ contract Pokemon
         wildPokemons.push(pokemonCount);
         wildPokemonCount++;
         pokemons.push(_pokemon);
-        emit PokemonCreated(pokemonCount, _name ,_level, _pokType, _value);
+        pokemonTransactionHash[_pokemon.pokId]++;
+        emit PokemonCreated(pokemonCount, _name ,_level, _pokType, _value, pokemonTransactionHash[_pokemon.pokId]);
         pokemonCount++;
         return pokemonCount;
     }

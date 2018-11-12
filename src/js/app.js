@@ -79,11 +79,16 @@ App = {
       PokemonRow.append(PokemonTemplate.html());
     }
   },
-  fetchWildPokemons: function (pokId) {
+  fetchWildPokemons: function (pokId, txnHash) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       var wildPokemonRow = $('#wildPokemonRow');
       var wildPokemonTemplate = $('#wildPokemonTemplate');
       pokemonInstance = instance;
+      pokemonInstance.pokemonTransactionHash(pokId).then(function (realHash){
+       console.log(realHash, txnHash);
+      if(realHash.c[0] != txnHash){
+          return;
+      }
       pokemonInstance.pokIndexToOwner(pokId).then(function(address){
           if(address == 0){
               pokemonInstance.pokemons(pokId).then(function (pokemon) {
@@ -91,16 +96,20 @@ App = {
               });
           }
       });
+      });
     }).catch(function (error) {
       console.warn(error);
     });
   },
-    fetchOwnPokemons: function (pokId) {
+    fetchOwnPokemons: function (pokId, txnHash) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
-      console.log(App.account);
       return pokemonInstance.ownedPoksCount(App.account);
     }).then(function (pokemonCount) {
+      pokemonInstance.pokemonTransactionHash(pokId).then(function (realHash){   // Checking if this transaction is the latest for this pokemon
+      if(realHash.c[0] != txnHash){
+          return;
+      }
       var ownPokemonRow = $('#ownPokemonRow');
       var ownPokemonTemplate = $('#ownPokemonTemplate');
       for (var i = 0; i < pokemonCount.c[0]; i++) {
@@ -113,25 +122,35 @@ App = {
           });
         });
       }
+      });
     }).catch(function (error) {
       console.warn(error);
     });
 },
-  fetchTradePokemons: function (pokId) {
+  fetchTradePokemons: function (pokId, txnHash) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       var tradePokemonRow = $('#tradePokemonRow');
       var tradePokemonTemplate = $('#tradePokemonTemplate');
+      pokemonInstance.pokemonTransactionHash(pokId).then(function (realHash){   // Checking if this transaction is the latest for this pokemon
+      if(realHash.c[0] != txnHash){
+          return;
+      }
       pokemonInstance.pokemons(pokId).then(function (pokemon){
-        var button_disabled = false;
-        pokemonInstance.pokIndexToOwner(pokId).then(function(owner){
-            if(owner == App.account){
-                button_disabled = true;
-            }
-            console.log(owner, App.account, button_disabled);
-            App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled);
+          pokemonInstance.tradePokemons(pokId).then(function (is_it_tradable){
+            if(is_it_tradable.c[0] == 1){   // Checking if the pokemon is still tradable
+                var button_disabled = false;
+                pokemonInstance.pokIndexToOwner(pokId).then(function(owner){
+                if(owner == App.account){
+                    button_disabled = true;
+                }
+                console.log(owner, App.account, button_disabled);
+                App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled);
+            });
+           }
+          });
         });
-      });
+        });
     }).catch(function (error) {
       console.warn(error);
     });
@@ -148,10 +167,6 @@ App = {
     }).catch(function (error) {
       console.warn(error);
       console.log(value);
-      // var x = $("[pokemon-id="+data_id+"]").html();
-      // console.log(x);
-      // console.log(data_id);
-      // return pokemonInstance.catchPokemon(data_id, { from: App.account, value: 200 });
     });
   },
 
@@ -170,6 +185,19 @@ App = {
             pokemonInstance.allowTrading(price, data_id, { from: App.account });
           }
       });
+    });
+  },
+
+  buyPokFromTradeMarket: function(data_id) {
+    var pokemonInstance;
+    App.contracts.Pokemon.deployed().then(function (instance) {
+        pokemonInstance = instance;
+        pokemonInstance.pokemons(data_id).then(function (pokemon){
+            var pokValue = pokemon[5];
+            pokemonInstance.buyFromTradeMarket(data_id, {from: App.account, value: pokValue});
+        });
+    }).catch(function(error){
+        console.warn(error);
     });
   },
 
@@ -201,6 +229,17 @@ App = {
            console.warn(error);
        });
    },
+   ReloadOnTradeMarketCountNotCorrect() {
+        App.contracts.Pokemon.deployed().then(function (instance){
+            pokemonInstance = instance;
+            return pokemonInstance.tradePokemonCount();
+        }).then(function(tradePokCount){
+            var tradePokemonRowLength = $('#tradePokemonRow > div').length;
+            if(tradePokCount < tradePokemonRowLength){
+                location.reload();
+            }
+        });
+   },
 
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
@@ -209,8 +248,9 @@ App = {
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon Transferred", event)
-        App.fetchOwnPokemons(event.args["_pokId"].c[0]);
+        App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnOwnCountNotCorrect();
+        App.ReloadOnTradeMarketCountNotCorrect();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
@@ -218,7 +258,7 @@ App = {
       }).watch(function (error, event) {
         console.log("Pokemon Created", event)
         console.log(event.args["_pokId"].c[0]);
-        App.fetchWildPokemons(event.args["_pokId"].c[0]);
+        App.fetchWildPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         //App.render();
       });
       instance.TradingTurnedOn({}, {
@@ -226,7 +266,7 @@ App = {
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon's trading turned on", event);
-        App.fetchTradePokemons(event.args["_pokId"].c[0]);
+        App.fetchTradePokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnTradeCountNotCorrect();
       });
     });
