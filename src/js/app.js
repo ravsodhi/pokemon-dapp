@@ -95,21 +95,28 @@ App = {
       console.warn(error);
     });
   },
-  fetchOwnPokemons: function (pokId) {
+    fetchOwnPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
+      pokemonInstance = instance;
+      console.log(App.account);
+      return pokemonInstance.ownedPoksCount(App.account);
+    }).then(function (pokemonCount) {
       var ownPokemonRow = $('#ownPokemonRow');
       var ownPokemonTemplate = $('#ownPokemonTemplate');
-      pokemonInstance = instance;
-      pokemonInstance.pokemons(pokId).then(function (pokemon) {
-        pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
-            if(is_in_trade.c[0] == 0)
-                App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false);
+      for (var i = 0; i < pokemonCount.c[0]; i++) {
+        pokemonInstance.ownedPoks(App.account, i).then(function (index) {
+          pokemonInstance.pokemons(index).then(function (pokemon) {
+            pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
+                if(is_in_trade.c[0] == 0)
+                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false);
+            });
+          });
         });
-      });
+      }
     }).catch(function (error) {
       console.warn(error);
     });
-  },
+},
   fetchTradePokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
