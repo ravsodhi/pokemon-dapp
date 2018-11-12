@@ -90,15 +90,6 @@ App = {
       console.warn(error);
     });
   },
-  removeCaughtPokemons: function(pokId){
-          var wildPokemonRow = $('#wildPokemonRow');
-          wildPokemonRow.children("div").each(function(){
-              var id = $(this).find('.btn-catch').attr('data-id');
-              if(id == pokId){
-                  this.remove();
-              }
-          });
-  },
   fetchOwnPokemons: function (pokId) {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
@@ -115,7 +106,6 @@ App = {
             var monType = pokemon[2];
             var monLevel = pokemon[3];
 
-              console.log("maa k c", monId.c[0]);
             ownPokemonTemplate.find('.panel-title').text(monName);
             ownPokemonTemplate.find('img').attr('src', "images/" + monId.c[0] + ".jpg");
             ownPokemonTemplate.find('.pokemon-name').text(monName);
@@ -197,6 +187,22 @@ App = {
       });
   },
 
+    /* Reload when the count of pokemon row in html is now equal to then pokemon's owned in contract */
+  ReloadOnCountNotCorrect(){
+    App.contracts.Pokemon.deployed().then(function (instance) {
+      pokemonInstance = instance;
+      return pokemonInstance.wildPokemonCount();
+    }).then(function (pokemonCount) {
+        var wildPokemonRowLength = $('#wildPokemonRow > div').length;
+        console.log("Douche", pokemonCount.c[0], wildPokemonRowLength);
+        console.log("Chill");
+        if(pokemonCount.c[0] < wildPokemonRowLength){
+            location.reload();
+        }
+    });
+
+  },
+
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
       instance.Transferred({}, {
@@ -204,9 +210,8 @@ App = {
         toBlock: 'latest'
       }).watch(function (error, event) {
         console.log("Pokemon Transferred", event)
-        App.removeCaughtPokemons(event.args["_pokId"]);
         App.fetchOwnPokemons(event.args["_pokId"].c[0]);
-        //location.reload();
+        App.ReloadOnCountNotCorrect();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
