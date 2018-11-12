@@ -15,7 +15,7 @@
   <div class="container" style="width: 950px;">
     <div class="row">
       <div class="col-lg-12">
-        <h1 class="text-center">Pokemon DApp</h1>
+        <h1 class="text-center">Pokemon Dapp</h1>
         <hr />
         <div id="loader">
           <p class="text-center">Loading...</p>
@@ -45,16 +45,17 @@
     <div class="col-sm-6 col-md-3 col-lg-3">
       <div class="panel panel-default panel-pokemon">
         <div class="panel-heading">
-          <h3 class="panel-title">Pokemon</h3>
+          <h3 class="panel-title text-center">Pokemon</h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" pokemon-id="0">
           <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 160px;height: 150px" src="https://images-na.ssl-images-amazon.com/images/I/510JE1W%2BdlL._UX385_.jpg"
             data-holder-rendered="true">
           <br /><br />
-          <strong>Name</strong>: <span class="pokemon-name">Golden Retriever</span><br />
-          <strong>Type</strong>: <span class="pokemon-type">3</span><br />
-          <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br /><br />
-          <button onclick="App.catchPok(this.getAttribute('data-id'));" class="btn btn-default btn-catch" type="button" data-id="0">Catch</button>
+          <strong>Name</strong> : <span class="pokemon-name">Golden Retriever</span><br />
+          <strong>Type</strong> : <span class="pokemon-type">3</span><br />
+          <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br />
+          <strong>Value</strong>: <span class="pokemon-value">Value</span><br /><br />
+          <button onclick="App.catchPok(this.getAttribute('data-id'));" class="btn btn-primary btn-block btn-default btn-catch" type="button" data-id="0">Catch</button>
         </div>
       </div>
     </div>
@@ -63,16 +64,17 @@
     <div class="col-sm-6 col-md-3 col-lg-3">
       <div class="panel panel-default panel-pokemon">
         <div class="panel-heading">
-          <h3 class="panel-title">Pokemon</h3>
+          <h3 class="panel-title text-center">Pokemon</h3>
         </div>
         <div class="panel-body">
           <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 160px;height: 150px"
             src="https://images-na.ssl-images-amazon.com/images/I/510JE1W%2BdlL._UX385_.jpg" data-holder-rendered="true">
           <br /><br />
-          <strong>Name</strong>: <span class="pokemon-name">Golden Retriever</span><br />
-          <strong>Type</strong>: <span class="pokemon-type">3</span><br />
-          <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br /><br />
-          <button onclick="App.tradePok(this.getAttribute('data-id'));" class="btn btn-default btn-trade" type="button"
+          <strong>Name</strong> : <span class="pokemon-name">Golden Retriever</span><br />
+          <strong>Type</strong> : <span class="pokemon-type">3</span><br />
+          <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br />
+          <strong>Value</strong>: <span class="pokemon-value">Value</span><br /><br />
+          <button onclick="App.tradePok(this.getAttribute('data-id'));" class="btn btn-primary btn-block btn-default btn-trade" type="button"
             data-id="0">Trade</button>
         </div>
       </div>
@@ -82,7 +84,7 @@
     <div class="col-sm-6 col-md-3 col-lg-3">
       <div class="panel panel-default panel-pokemon">
         <div class="panel-heading">
-          <h3 class="panel-title">Pokemon</h3>
+          <h3 class="panel-title text-center">Pokemon</h3>
         </div>
         <div class="panel-body">
           <img alt="140x140" data-src="holder.js/140x140" class="img-rounded img-center" style="width: 160px;height: 150px"
@@ -91,7 +93,7 @@
           <strong>Name</strong>: <span class="pokemon-name">Golden Retriever</span><br />
           <strong>Type</strong>: <span class="pokemon-type">3</span><br />
           <strong>Level</strong>: <span class="pokemon-level">Warren, MI</span><br /><br />
-          <button onclick="App.tradePok(this.getAttribute('data-id'));" class="btn btn-default btn-buy" type="button"
+          <button onclick="App.tradePok(this.getAttribute('data-id'));" class="btn btn-primary btn-block btn-default btn-buy" type="button"
             data-id="0">Buy</button>
         </div>
       </div>

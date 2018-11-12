@@ -83,7 +83,7 @@ contract Pokemon
     public
     returns(bool){
         require(msg.sender == pokIndexToOwner[_pokId], "You are not the owner of this pokemon");
-        tradePokemons[_pokId] = 1; 
+        tradePokemons[_pokId] = 1;
         pokemons[_pokId].value = _value;
         emit TradingTurnedOn(_pokId, msg.sender);
         return true;
