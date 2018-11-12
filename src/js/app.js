@@ -104,7 +104,10 @@ App = {
       for (var i = 0; i < pokemonCount.c[0]; i++) {
         pokemonInstance.ownedPoks(App.account, i).then(function (index) {
           pokemonInstance.pokemons(index).then(function (pokemon) {
-            App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade');
+            pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
+                if(is_in_trade.c[0] == 0)
+                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade');
+            });
           });
         });
       }
@@ -166,7 +169,7 @@ App = {
   },
 
   /* Reload when the count of pokemon row in html is now equal to then pokemon's owned in contract */
-  ReloadOnCountNotCorrect() {
+  ReloadOnOwnCountNotCorrect() {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       return pokemonInstance.wildPokemonCount();
@@ -176,8 +179,23 @@ App = {
         location.reload();
       }
     });
-
   },
+
+   ReloadOnTradeCountNotCorrect() {
+       App.contracts.Pokemon.deployed().then(function (instance){
+           pokemonInstance = instance;
+           return pokemonInstance.ownedPoksCount(App.account);
+       }).then(function(totalOwnCount){
+           pokemonInstance.tradePoksCount(App.account).then(function (tradeCount){
+               var ownPokemonRowLength = $('#ownPokemonRow > div').length;
+               if((totalOwnCount.c[0] - tradeCount.c[0]) < ownPokemonRowLength){    // If the non-tradable owned pokemons are less than what is displayed, reload
+                   location.reload();
+               }
+           });
+       }).catch(function(error){
+           console.warn(error);
+       });
+   },
 
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
@@ -187,7 +205,7 @@ App = {
       }).watch(function (error, event) {
         console.log("Pokemon Transferred", event)
         App.fetchOwnPokemons(event.args["_pokId"].c[0]);
-        App.ReloadOnCountNotCorrect();
+        App.ReloadOnOwnCountNotCorrect();
       });
       instance.PokemonCreated({}, {
         fromBlock: 0,
@@ -204,6 +222,7 @@ App = {
       }).watch(function (error, event) {
         console.log("Pokemon's trading turned on", event);
         App.fetchTradePokemons(event.args["_pokId"].c[0]);
+        App.ReloadOnTradeCountNotCorrect();
       });
     });
   }

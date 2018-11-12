@@ -4,6 +4,7 @@ contract Pokemon
 {
     uint public pokemonCount = 0;
     uint public wildPokemonCount = 0;
+    uint public tradePokemonCount = 0;
 
     constructor
     ()
@@ -28,11 +29,12 @@ contract Pokemon
 
     Pokemon[] public pokemons; // A list of ALL the pokemons in existence
     uint256[] public wildPokemons;
-    mapping(uint256 => uint) tradePokemons; // 1 if a pokemon is tradeble, otherwise 0
+    mapping(uint256 => uint) public tradePokemons; // 1 if a pokemon is tradeble, otherwise 0
     mapping(uint256 => address) public pokIndexToOwner; // The mapping defining the owner of specific pokemon
     mapping(address => uint)    pendingReturns; // Storing the pending returns of some user
-    mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address
-    mapping(address => uint256) public ownedPoksCount; // The number of pokemons owned by an address
+    mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address(includes the ones which are trade market also)
+    mapping(address => uint256) public ownedPoksCount; // The number of pokemons owned by an address(includes the tradable ones also)
+    mapping(address => uint256) public tradePoksCount; // Number of pokemons put up for trade by and address
 
     //Getter functions
     // Events -- front end will update if it is listening to an event
@@ -84,6 +86,8 @@ contract Pokemon
     returns(bool){
         require(msg.sender == pokIndexToOwner[_pokId], "You are not the owner of this pokemon");
         tradePokemons[_pokId] = 1;
+        tradePokemonCount++;
+        tradePoksCount[msg.sender]++;
         pokemons[_pokId].value = _value;
         emit TradingTurnedOn(_pokId, msg.sender);
         return true;
