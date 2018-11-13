@@ -25,11 +25,14 @@ contract Pokemon
         uint64 level;  // Level for each pokemon
         uint64 exp;    // Experience acquired by a pokemon
         uint64 value;  // Value of the pokemon in some units
+        uint64 train_value; // value required to train pokemon.
     }
 
     Pokemon[] public pokemons; // A list of ALL the pokemons in existence
     uint256[] public wildPokemons;
     mapping(uint256 => uint) public tradePokemons; // 1 if a pokemon is tradeble, otherwise 0
+    mapping(uint256 => uint) public trainPokemon;
+    mapping(uint256 => uint256) public tradeTime;
     mapping(uint256 => address) public pokIndexToOwner; // The mapping defining the owner of specific pokemon
     mapping(address => uint) public pendingReturns; // Storing the pending returns of some user
     mapping(address => uint256[]) public ownedPoks;  // All the pokemons owned by an address(includes the ones which are trade market also)
@@ -44,7 +47,7 @@ contract Pokemon
     event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value, uint256 txnHash);
     event TradingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
     event TradingTurnedOff(uint256 _pokId, address _owner, uint256 txnHash);
-
+    event TrainingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _pokId)
     internal
@@ -118,6 +121,7 @@ contract Pokemon
     function allowTrading(uint64 _value, uint256 _pokId)
     public
     returns(bool){
+        require(now >= tradeTime[_pokId], "Trade disallowed at this timestamp.");
         require(msg.sender == pokIndexToOwner[_pokId], "You are not the owner of this pokemon");
         tradePokemons[_pokId] = 1;
         tradePokemonCount++;
@@ -139,7 +143,8 @@ contract Pokemon
             pokType : _pokType,
             level : _level,
             exp : 0,
-            value : _value
+            value : _value,
+            train_value : 0
         });
         wildPokemons.push(pokemonCount);
         wildPokemonCount++;
@@ -164,9 +169,25 @@ contract Pokemon
         require(pokemons[pokID].value <= msg.value, "Not supplied the required amount");
         _transfer(0, msg.sender, pokID);
         pendingReturns[msg.sender] += msg.value - pokemons[pokID].value;
+        tradeTime[pokID] = now;
         return true;
     }
 
+    function trainPokemon(uint256 pokId)
+    public
+    payable
+    returns(bool)
+    {
+        // console.log(now);
+        require(tradeTime[pokId] <= now, "The pokemon is not eligible for training.");
+        // require(tradePokemons[pokId] == 0, "The pokemon is not eligible for training.");
+        require(pokIndexToOwner[pokId] == msg.sender, "You should own the pokemon to train it.");
+        require(pokemons[pokId].train_value <= msg.value, "Insufficient funds for training.");
+        pendingReturns[msg.sender] += msg.value - pokemons[pokId].train_value;
+        pokemons[pokId].level +=1;
+        tradeTime[pokId] = now + 6;
+        // emit TrainingTurnedOn(_pokId, msg.sender, pokemonTransactionHash[_pokId]);
+    }
     function withdraw()
     public
     returns(bool)
