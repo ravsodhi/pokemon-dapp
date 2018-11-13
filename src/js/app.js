@@ -78,7 +78,12 @@ App = {
     }
     else{
       PokemonTemplate.find('.btn-'.concat(btn_category)).html(btn_category);
-      PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.buyPokFromTradeMarket(this.getAttribute('data-id'));");
+      if(btn_category === 'buy' )
+          PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.buyPokFromTradeMarket(this.getAttribute('data-id'));");
+      else if(btn_category === 'catch')
+          PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.catchPok(this.getAttribute('data-id'));");
+      else if(btn_category === 'trade')
+          PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.tradePok(this.getAttribute('data-id'));");
     }
     if (monId.c[0] == pokId) {
       PokemonRow.append(PokemonTemplate.html());
