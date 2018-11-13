@@ -56,7 +56,7 @@ App = {
     // pokemonRow.show();
 
   },
-  renderPokemons: function (pokId, pokemon, PokemonRow, PokemonTemplate, btn_category, btn_disabled) {
+  renderPokemons: function (pokId, pokemon, PokemonRow, PokemonTemplate, btn_category, btn_disabled, btn_category2) {
     var monId = pokemon[0];
     var monName = pokemon[1];
     var monType = pokemon[2];
@@ -84,6 +84,10 @@ App = {
           PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.catchPok(this.getAttribute('data-id'));");
       else if(btn_category === 'trade')
           PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.tradePok(this.getAttribute('data-id'));");
+      if(btn_category2 ==='train'){
+        PokemonTemplate.find('.btn-'.concat(btn_category2)).attr('data-id', monId.c[0]);
+        PokemonTemplate.find('.btn-'.concat(btn_category2)).attr('onclick', "App.trainPok(this.getAttribute('data-id'));");
+      }
     }
     if (monId.c[0] == pokId) {
       PokemonRow.append(PokemonTemplate.html());
@@ -102,7 +106,7 @@ App = {
       pokemonInstance.pokIndexToOwner(pokId).then(function(address){
           if(address == 0){
               pokemonInstance.pokemons(pokId).then(function (pokemon) {
-                App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch', false);
+                App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch', false, 'train');
               });
           }
       });
@@ -127,7 +131,7 @@ App = {
           pokemonInstance.pokemons(index).then(function (pokemon) {
             pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
                 if(is_in_trade.c[0] == 0)
-                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false);
+                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false, '');
             });
           });
         });
@@ -155,7 +159,7 @@ App = {
                     button_disabled = true;
                 }
                 console.log(owner, App.account, button_disabled);
-                App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled);
+                App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled, '');
             });
            }
           });
@@ -198,6 +202,17 @@ App = {
     });
   },
 
+  trainPok: function (data_id) {
+    var pokemonInstance;
+    App.contracts.Pokemon.deployed().then(function (instance) {
+      pokemonInstance = instance;
+      pokemonInstance.pokemons(data_id).then(function (pokemon){
+        pokemonInstance.trainPokemon(data_id, {from: App.account});
+      });
+    });
+    // location.reload();
+  },
+  
   buyPokFromTradeMarket: function(data_id) {
     var pokemonInstance;
     App.contracts.Pokemon.deployed().then(function (instance) {
@@ -279,6 +294,10 @@ App = {
        });
    },
 
+  // enableTrain: function() {
+
+  // },
+
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {
       instance.Transferred({}, {
@@ -314,7 +333,13 @@ App = {
           console.log("Pokemon's trading turned off", event);
           App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
           App.ReloadOnTradeMarketCountNotCorrect();
-      })
+      });
+      // Instance.TrainingTurnedOn({}, {
+      //   fromBlock: 0,
+      //   toBlock: 'latest'
+      // }).watch(function (error, event) {
+      //   App.fetchOwnPo
+      // })
     });
   }
 };
