@@ -72,10 +72,14 @@ App = {
     PokemonTemplate.find('.pokemon-level').text(monLevel);
     PokemonTemplate.find('.pokemon-value').text(monValue);
     PokemonTemplate.find('.btn-'.concat(btn_category)).attr('data-id', monId.c[0]);
-    if(btn_disabled == true)
-      PokemonTemplate.find('.btn-'.concat(btn_category)).prop('disabled', true);
-    else
-      PokemonTemplate.find('.btn-'.concat(btn_category)).prop('disabled', false);
+    if(btn_disabled == true){
+      PokemonTemplate.find('.btn-'.concat(btn_category)).html("Own Back");
+      PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.disableTrade(this.getAttribute('data-id'));");
+    }
+    else{
+      PokemonTemplate.find('.btn-'.concat(btn_category)).html(btn_category);
+      PokemonTemplate.find('.btn-'.concat(btn_category)).attr('onclick', "App.buyPokFromTradeMarket(this.getAttribute('data-id'));");
+    }
     if (monId.c[0] == pokId) {
       PokemonRow.append(PokemonTemplate.html());
     }
@@ -201,6 +205,13 @@ App = {
         console.warn(error);
     });
   },
+  disableTrade: function(data_id) {
+    var pokemonInstance;
+    App.contracts.Pokemon.deployed().then(function (instance) {
+        pokemonInstance = instance;
+        pokemonInstance.disableTrade(data_id, {from: App.account});
+    });
+  },
 
   /* Reload when the count of pokemon row in html is now equal to then pokemon's owned in contract */
   ReloadOnOwnCountNotCorrect() {
@@ -291,6 +302,14 @@ App = {
         App.fetchTradePokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnTradeCountNotCorrect();
       });
+      instance.TradingTurnedOff({}, {
+          fromBlock: 0,
+          toBlock: 'latest'
+      }).watch(function (error, event) {
+          console.log("Pokemon's trading turned off", event);
+          App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
+          App.ReloadOnTradeMarketCountNotCorrect();
+      })
     });
   }
 };

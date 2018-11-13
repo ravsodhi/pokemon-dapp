@@ -43,6 +43,7 @@ contract Pokemon
     event Transferred(address _from, address _to, uint256 _pokId, uint256 txnHash);
     event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value, uint256 txnHash);
     event TradingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
+    event TradingTurnedOff(uint256 _pokId, address _owner, uint256 txnHash);
 
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _pokId)
@@ -97,6 +98,20 @@ contract Pokemon
         pendingReturns[pokIndexToOwner[_pokId]] += pokemons[_pokId].value;
         pendingReturns[msg.sender] += msg.value - pokemons[_pokId].value;
         _transfer(pokIndexToOwner[_pokId], msg.sender, _pokId); // Transfer the ownership of pokemon to the buyer
+    }
+
+    /* Function to disable trade on a pokemon that is put up for sale on trade market */
+    function disableTrade(uint256 _pokId)
+    public
+    returns(bool)
+    {
+        require(msg.sender == pokIndexToOwner[_pokId], "You are not the owner of this pokemon");
+        tradePokemons[_pokId] = 0;
+        tradePokemonCount--;
+        tradePoksCount[msg.sender]--;
+        pokemonTransactionHash[_pokId]++;
+        emit TradingTurnedOff(_pokId, msg.sender, pokemonTransactionHash[_pokId]);
+        return true;
     }
 
     /* Function to allow trading of a pokemon */
