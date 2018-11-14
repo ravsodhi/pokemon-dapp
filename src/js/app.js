@@ -210,6 +210,7 @@ App = {
         pokemonInstance.trainPokemon(data_id, {from: App.account});
       });
     });
+    console.log("I am here, okay?");
     // location.reload();
   },
   
