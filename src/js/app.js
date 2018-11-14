@@ -28,8 +28,6 @@ App = {
       App.contracts.Pokemon.setProvider(App.web3Provider);
 
       App.listenForEvents();
-      // App.fetchWildPokemons();
-      // App.fetchOwnPokemons();
       return App.render();
     });
   },
@@ -51,10 +49,6 @@ App = {
     // Load contract data
     loader.hide();
     content.show();
-
-    // pokemonTemplate.show();
-    // pokemonRow.show();
-
   },
   renderPokemons: function (pokId, pokemon, PokemonRow, PokemonTemplate, btn_category, btn_disabled, btn_category2) {
     var monId = pokemon[0];
@@ -99,7 +93,6 @@ App = {
       var wildPokemonTemplate = $('#wildPokemonTemplate');
       pokemonInstance = instance;
       pokemonInstance.pokemonTransactionHash(pokId).then(function (realHash){
-       console.log(realHash, txnHash);
       if(realHash.c[0] != txnHash){
           return;
       }
@@ -169,7 +162,6 @@ App = {
                 if(owner == App.account){
                     button_disabled = true;
                 }
-                console.log(owner, App.account, button_disabled);
                 App.renderPokemons(pokId, pokemon, tradePokemonRow, tradePokemonTemplate, 'buy', button_disabled, '');
             });
            }
@@ -205,7 +197,6 @@ App = {
             ;
           }
           else {
-            console.log("This is my price for the pokemon", price);
             console.log(data_id, App.account);
             pokemonInstance.allowTrading(price, data_id, { from: App.account });
           }
@@ -219,8 +210,6 @@ App = {
       pokemonInstance = instance;
       pokemonInstance.pokemons(data_id).then(function (pokemon){
         pokemonInstance.pokIndexToOwner(data_id).then(function (address){
-            console.log("lets see", address, App.account);
-            console.log("PokeId: ", data_id);
             pokemonInstance.trainPokemon(data_id, {from: App.account}).then(function (){
                 location.reload();
             });
@@ -231,7 +220,6 @@ App = {
     }).catch(function(error){
         console.warn(error);
     });
-    console.log("I am here, okay?");
     // location.reload();
   },
   
@@ -300,7 +288,6 @@ App = {
         pokemonInstance = instance;
         return pokemonInstance.pendingReturns(App.account);
     }).then(function (my_money){
-        console.log("I am here");
         var wallet = $('#walletBallance').html("Wallet Ballance: " + my_money.c[0]);
     }).catch(function (error){
         console.warn(error);
@@ -322,7 +309,6 @@ App = {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function (error, event) {
-        console.log("Pokemon Transferred", event)
         App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnOwnCountNotCorrect();
         App.ReloadOnTradeMarketCountNotCorrect();
@@ -332,7 +318,6 @@ App = {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function (error, event) {
-        console.log("Pokemon Created", event)
         console.log(event.args["_pokId"].c[0]);
         App.fetchWildPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
       });
@@ -340,7 +325,6 @@ App = {
         fromBlock: 0,
         toBlock: 'latest'
       }).watch(function (error, event) {
-        console.log("Pokemon's trading turned on", event);
         App.fetchTradePokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
         App.ReloadOnTradeCountNotCorrect();
       });
@@ -348,16 +332,9 @@ App = {
           fromBlock: 0,
           toBlock: 'latest'
       }).watch(function (error, event) {
-          console.log("Pokemon's trading turned off", event);
           App.fetchOwnPokemons(event.args["_pokId"].c[0], event.args["txnHash"].c[0]);
           App.ReloadOnTradeMarketCountNotCorrect();
       });
-      // Instance.TrainingTurnedOn({}, {
-      //   fromBlock: 0,
-      //   toBlock: 'latest'
-      // }).watch(function (error, event) {
-      //   App.fetchOwnPo
-      // })
     });
   }
 };

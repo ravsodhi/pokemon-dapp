@@ -47,7 +47,6 @@ contract Pokemon
     event PokemonCreated(uint256 _pokId, string _name, uint64 _level, string _pokType, uint _value, uint256 txnHash);
     event TradingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
     event TradingTurnedOff(uint256 _pokId, address _owner, uint256 txnHash);
-    event TrainingTurnedOn(uint256 _pokId, address _owner, uint256 txnHash);
     /* Function to transfer pokemon from one address to another */
     function _transfer(address _from, address _to, uint256 _pokId)
     internal
@@ -180,13 +179,12 @@ contract Pokemon
     {
         // console.log(now);
         require(tradeTime[pokId] <= now, "The pokemon is not eligible for training.");
-        // require(tradePokemons[pokId] == 0, "The pokemon is not eligible for training.");
+        require(tradePokemons[pokId] == 0, "The pokemon is not eligible for training.");
         require(pokIndexToOwner[pokId] == msg.sender, "You should own the pokemon to train it.");
         require(pokemons[pokId].train_value <= msg.value, "Insufficient funds for training.");
         pendingReturns[msg.sender] += msg.value - pokemons[pokId].train_value;
         pokemons[pokId].level +=1;
         tradeTime[pokId] = now + 25;
-        // emit TrainingTurnedOn(_pokId, msg.sender, pokemonTransactionHash[_pokId]);
     }
     function withdraw()
     public
