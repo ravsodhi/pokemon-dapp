@@ -106,7 +106,7 @@ App = {
       pokemonInstance.pokIndexToOwner(pokId).then(function(address){
           if(address == 0){
               pokemonInstance.pokemons(pokId).then(function (pokemon) {
-                App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch', false, 'train');
+                App.renderPokemons(pokId, pokemon, wildPokemonRow, wildPokemonTemplate, 'catch', false, '');
               });
           }
       });
@@ -131,7 +131,18 @@ App = {
           pokemonInstance.pokemons(index).then(function (pokemon) {
             pokemonInstance.tradePokemons(pokId).then(function (is_in_trade) {
                 if(is_in_trade.c[0] == 0)
-                    App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false, '');
+                    pokemonInstance.tradeTime(pokId).then(function (till_time){
+                        App.renderPokemons(pokId, pokemon, ownPokemonRow, ownPokemonTemplate, 'trade', false, 'train');
+                        var last_chld = ownPokemonRow.find(`[data-id='${pokId}']`);
+                        if(till_time.c[0] > ($.now()/1000)){
+                            last_chld[0].disabled = true;
+                            last_chld[1].disabled = true;
+                        }
+                        else{
+                            last_chld[0].disabled = false;
+                            last_chld[1].disabled = false;
+                        }
+                });
             });
           });
         });
@@ -207,8 +218,18 @@ App = {
     App.contracts.Pokemon.deployed().then(function (instance) {
       pokemonInstance = instance;
       pokemonInstance.pokemons(data_id).then(function (pokemon){
-        pokemonInstance.trainPokemon(data_id, {from: App.account});
+        pokemonInstance.pokIndexToOwner(data_id).then(function (address){
+            console.log("lets see", address, App.account);
+            console.log("PokeId: ", data_id);
+            pokemonInstance.trainPokemon(data_id, {from: App.account}).then(function (){
+                location.reload();
+            });
+        });
+      }).catch(function(error){
+          console.warn(error);
       });
+    }).catch(function(error){
+        console.warn(error);
     });
     console.log("I am here, okay?");
     // location.reload();
@@ -294,10 +315,6 @@ App = {
            });
        });
    },
-
-  // enableTrain: function() {
-
-  // },
 
   listenForEvents: function () {
     App.contracts.Pokemon.deployed().then(function (instance) {

@@ -185,7 +185,7 @@ contract Pokemon
         require(pokemons[pokId].train_value <= msg.value, "Insufficient funds for training.");
         pendingReturns[msg.sender] += msg.value - pokemons[pokId].train_value;
         pokemons[pokId].level +=1;
-        tradeTime[pokId] = now + 6;
+        tradeTime[pokId] = now + 25;
         // emit TrainingTurnedOn(_pokId, msg.sender, pokemonTransactionHash[_pokId]);
     }
     function withdraw()
